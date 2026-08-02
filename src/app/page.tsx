@@ -1,65 +1,89 @@
-import Image from "next/image";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { computeMaintenanceStatuses } from "@/lib/maintenance";
+import { ReminderBadge } from "@/components/ReminderBadge";
 
-export default function Home() {
+const TYPE_EMOJI: Record<string, string> = { CAR: "🚗", MOTORCYCLE: "🏍️" };
+
+export default async function DashboardPage() {
+  const [vehicles, maintenanceTypes, records] = await Promise.all([
+    prisma.vehicle.findMany({ orderBy: { createdAt: "asc" } }),
+    prisma.maintenanceType.findMany(),
+    prisma.maintenanceRecord.findMany(),
+  ]);
+
+  if (vehicles.length === 0) {
+    return (
+      <div className="text-center py-16 space-y-4">
+        <p className="text-neutral-500">まだ車両が登録されていません</p>
+        <Link
+          href="/vehicles/new"
+          className="inline-block rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-4 py-2 font-medium"
+        >
+          + 車両を登録する
+        </Link>
+      </div>
+    );
+  }
+
+  const vehiclesWithStatus = vehicles.map((vehicle) => {
+    const vehicleRecords = records.filter((r) => r.vehicleId === vehicle.id);
+    const statuses = computeMaintenanceStatuses(vehicle, maintenanceTypes, vehicleRecords);
+    return { vehicle, statuses };
+  });
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">ダッシュボード</h1>
+        <Link
+          href="/vehicles/new"
+          className="text-sm rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-900"
+        >
+          + 車両を追加
+        </Link>
+      </div>
+
+      <div className="space-y-4">
+        {vehiclesWithStatus.map(({ vehicle, statuses }) => (
+          <div
+            key={vehicle.id}
+            className="border border-neutral-200 dark:border-neutral-800 rounded-lg p-4 space-y-3"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <Link
+                  href={`/vehicles/${vehicle.id}`}
+                  className="font-medium hover:underline"
+                >
+                  {TYPE_EMOJI[vehicle.type] ?? ""} {vehicle.name}
+                </Link>
+                <p className="text-sm text-neutral-500">
+                  走行距離 {vehicle.currentOdometer.toLocaleString()} km
+                </p>
+              </div>
+              <Link
+                href={`/vehicles/${vehicle.id}/records/new`}
+                className="shrink-0 text-sm rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-900"
+              >
+                記録を追加
+              </Link>
+            </div>
+
+            {statuses.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {statuses.map((status) => (
+                  <ReminderBadge key={status.maintenanceTypeId} status={status} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-neutral-400">
+                整備記録を追加すると、次回の目安がここに表示されます
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

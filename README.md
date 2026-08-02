@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MyCar Maintenance
 
-## Getting Started
+車・バイクの整備記録、次回整備の目安（走行距離・日付ベース）、整備費用を管理するアプリ。
 
-First, run the development server:
+- Next.js (App Router) + TypeScript + Tailwind CSS
+- Prisma ORM + `@libsql/client`（SQLite / Turso 互換のlibSQLドライバ）
+- 認証は簡易パスワードゲートのみ（自分専用アプリ想定）
+
+## ローカルで動かす
+
+```bash
+npm install
+cp .env.example .env.local
+```
+
+`.env.local` を編集:
+
+- `APP_PASSWORD` — アプリにアクセスするためのパスワード
+- `SESSION_SECRET` — ログインセッションの署名用ランダム文字列（`openssl rand -hex 32` で生成）
+- `DATABASE_URL` はローカルではそのまま `file:./local.db` でOK（Tursoアカウント不要）
+
+DBの初期化（テーブル作成 + 既定の整備項目の投入）:
+
+```bash
+npm run db:init
+```
+
+開発サーバー起動:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 を開き、`APP_PASSWORD` でログイン。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 本番デプロイ（Vercel + Turso）
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+ここから先はユーザー自身のVercel/Tursoアカウントでの操作が必要です。
 
-## Learn More
+### 1. Tursoでデータベースを作成
 
-To learn more about Next.js, take a look at the following resources:
+[Turso](https://turso.tech) のアカウントを作成し、CLIをセットアップ:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+curl -sSfL https://get.tur.so/install.sh | bash
+turso auth login
+turso db create mycar-maintenance
+turso db show mycar-maintenance --url
+turso db tokens create mycar-maintenance
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`--url` で得られる `libsql://...` と、tokenの値を控えておく。
 
-## Deploy on Vercel
+### 2. リモートDBにスキーマを適用
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+このリポジトリの `npm run db:init` はローカルファイルにもTursoにも同じスクリプトで使える
+（`prisma/init-db.ts` が `DATABASE_URL` を見てテーブル作成 + 既定項目の投入を行う）。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+DATABASE_URL="libsql://<your-db>.turso.io" \
+DATABASE_AUTH_TOKEN="<token>" \
+npm run db:init
+```
+
+### 3. Vercelにデプロイ
+
+1. [Vercel](https://vercel.com) でこのGitHubリポジトリ（`luluszk-spec/MyCar-Maintenance`）をインポート
+2. Environment Variablesに以下を設定
+   - `DATABASE_URL` = Tursoの `libsql://...` URL
+   - `DATABASE_AUTH_TOKEN` = Tursoのトークン
+   - `APP_PASSWORD` = アプリのパスワード（本番用に変更推奨）
+   - `SESSION_SECRET` = ランダムな文字列（`openssl rand -hex 32`）
+3. Deploy
+
+デプロイ後のURLをiPhoneのSafariで開き、「ホーム画面に追加」するとアプリのように使えます。
+
+> Public リポジトリ・Public URLになるため、`APP_PASSWORD` は必ずデフォルトから変更してください。
+
+## 主な機能
+
+- 車両（車・バイク、複数台）の登録・走行距離管理
+- 整備記録の記録（既定項目 + 自由入力、費用・メモ）
+- 走行距離ベース／日付ベースのリマインダー（ダッシュボードに「あと◯km / ◯日」表示）
+- 整備項目マスタのカスタマイズ
+- 年別・車両別のコスト集計
+
+## API
+
+`src/app/api/` 配下にREST風のJSON APIがあり、画面はこれを経由してデータを更新します
+（将来ネイティブアプリを作る場合も同じAPIを再利用できる想定）。
+
+- `GET/POST /api/vehicles`, `GET/PATCH/DELETE /api/vehicles/:id`
+- `GET/POST /api/maintenance-types`, `DELETE /api/maintenance-types/:id`
+- `GET/POST /api/maintenance-records`, `DELETE /api/maintenance-records/:id`
+
+すべて `proxy.ts`（Next.js 16のミドルウェア）でログインセッションのCookieをチェックしています。
