@@ -34,6 +34,13 @@ export async function POST(request: Request) {
       make: typeof body.make === "string" ? body.make.trim() || null : null,
       model: typeof body.model === "string" ? body.model.trim() || null : null,
       year: Number.isFinite(body.year) ? Math.trunc(body.year) : null,
+      grade: typeof body.grade === "string" ? body.grade.trim() || null : null,
+      plateNumber:
+        typeof body.plateNumber === "string" ? body.plateNumber.trim() || null : null,
+      purchaseDate:
+        typeof body.purchaseDate === "string" && body.purchaseDate
+          ? new Date(body.purchaseDate)
+          : null,
       currentOdometer: Number.isFinite(body.currentOdometer)
         ? Math.max(0, Math.trunc(body.currentOdometer))
         : 0,

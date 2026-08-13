@@ -14,6 +14,9 @@ export default function NewVehiclePage() {
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
+  const [grade, setGrade] = useState("");
+  const [plateNumber, setPlateNumber] = useState("");
+  const [purchaseDate, setPurchaseDate] = useState("");
   const [currentOdometer, setCurrentOdometer] = useState("0");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +35,9 @@ export default function NewVehiclePage() {
         make: make || undefined,
         model: model || undefined,
         year: year ? Number(year) : undefined,
+        grade: grade || undefined,
+        plateNumber: plateNumber || undefined,
+        purchaseDate: purchaseDate || undefined,
         currentOdometer: currentOdometer ? Number(currentOdometer) : 0,
       }),
     });
@@ -125,18 +131,56 @@ export default function NewVehiclePage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className={labelClass} htmlFor="odometer">
-              現在の走行距離 (km)
+            <label className={labelClass} htmlFor="grade">
+              グレード
             </label>
             <input
-              id="odometer"
-              type="number"
-              min={0}
+              id="grade"
               className={inputClass}
-              value={currentOdometer}
-              onChange={(e) => setCurrentOdometer(e.target.value)}
+              value={grade}
+              onChange={(e) => setGrade(e.target.value)}
             />
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className={labelClass} htmlFor="plateNumber">
+              ナンバー
+            </label>
+            <input
+              id="plateNumber"
+              className={inputClass}
+              value={plateNumber}
+              onChange={(e) => setPlateNumber(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className={labelClass} htmlFor="purchaseDate">
+              購入日
+            </label>
+            <input
+              id="purchaseDate"
+              type="date"
+              className={inputClass}
+              value={purchaseDate}
+              onChange={(e) => setPurchaseDate(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className={labelClass} htmlFor="odometer">
+            現在の走行距離 (km)
+          </label>
+          <input
+            id="odometer"
+            type="number"
+            min={0}
+            className={inputClass}
+            value={currentOdometer}
+            onChange={(e) => setCurrentOdometer(e.target.value)}
+          />
         </div>
 
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}

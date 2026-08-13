@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS "Vehicle" (
   "make" TEXT,
   "model" TEXT,
   "year" INTEGER,
+  "grade" TEXT,
+  "plateNumber" TEXT,
+  "purchaseDate" DATETIME,
   "currentOdometer" INTEGER NOT NULL DEFAULT 0,
   "photoUrl" TEXT,
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

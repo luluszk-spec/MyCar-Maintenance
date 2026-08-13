@@ -15,7 +15,7 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function NavLinks({ userLabel }: { userLabel?: string | null }) {
+export function NavLinks({ userLabelSlot }: { userLabelSlot?: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
@@ -33,11 +33,7 @@ export function NavLinks({ userLabel }: { userLabel?: string | null }) {
           {item.label}
         </Link>
       ))}
-      {userLabel && (
-        <span className="px-2 text-neutral-500 whitespace-nowrap max-w-[10rem] truncate">
-          {userLabel}
-        </span>
-      )}
+      {userLabelSlot}
       <form action="/api/auth/logout" method="POST">
         <button
           type="submit"

@@ -29,6 +29,13 @@ export async function PATCH(request: Request, { params }: Params) {
   if (body.year === null || Number.isFinite(body.year)) {
     data.year = body.year == null ? null : Math.trunc(body.year);
   }
+  if (typeof body.grade === "string") data.grade = body.grade.trim() || null;
+  if (typeof body.plateNumber === "string") data.plateNumber = body.plateNumber.trim() || null;
+  if (body.purchaseDate === null) {
+    data.purchaseDate = null;
+  } else if (typeof body.purchaseDate === "string" && body.purchaseDate) {
+    data.purchaseDate = new Date(body.purchaseDate);
+  }
   if (Number.isFinite(body.currentOdometer)) {
     data.currentOdometer = Math.max(0, Math.trunc(body.currentOdometer));
   }
