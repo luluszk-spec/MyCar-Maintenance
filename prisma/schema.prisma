@@ -27,6 +27,9 @@ model Vehicle {
   make            String?
   model           String?
   year            Int?
+  grade           String?
+  plateNumber     String?
+  purchaseDate    DateTime?
   currentOdometer Int                 @default(0)
   photoUrl        String?
   createdAt       DateTime            @default(now())

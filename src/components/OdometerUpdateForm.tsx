@@ -15,6 +15,12 @@ export function OdometerUpdateForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const displayValue = value === "" ? "" : Number(value).toLocaleString("ja-JP");
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setValue(e.target.value.replace(/[^0-9]/g, ""));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
@@ -42,11 +48,11 @@ export function OdometerUpdateForm({
         </label>
         <input
           id="odometer-update"
-          type="number"
-          min={0}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          className="w-36 rounded-md border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-neutral-400"
+          type="text"
+          inputMode="numeric"
+          value={displayValue}
+          onChange={handleChange}
+          className="w-[9ch] rounded-md border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-neutral-400"
         />
       </div>
       <button

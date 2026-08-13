@@ -7,10 +7,10 @@ import { OdometerUpdateForm } from "@/components/OdometerUpdateForm";
 import { DeleteButton } from "@/components/DeleteButton";
 import { VehiclePhotoUpload } from "@/components/VehiclePhotoUpload";
 import { MaintenanceHistoryList } from "@/components/MaintenanceHistoryList";
+import { VehicleInfoSection } from "@/components/VehicleInfoSection";
 import { getCurrentUserId } from "@/lib/session";
 
 const TYPE_EMOJI: Record<string, string> = { CAR: "🚗", MOTORCYCLE: "🏍️" };
-const TYPE_LABEL: Record<string, string> = { CAR: "車", MOTORCYCLE: "バイク" };
 
 export default async function VehicleDetailPage({
   params,
@@ -50,12 +50,18 @@ export default async function VehicleDetailPage({
             <h1 className="text-xl font-semibold">
               {TYPE_EMOJI[vehicle.type] ?? ""} {vehicle.name}
             </h1>
-            <p className="text-sm text-neutral-500">
-              {TYPE_LABEL[vehicle.type] ?? vehicle.type}
-              {vehicle.make ? ` ・ ${vehicle.make}` : ""}
-              {vehicle.model ? ` ${vehicle.model}` : ""}
-              {vehicle.year ? ` (${vehicle.year})` : ""}
-            </p>
+            <VehicleInfoSection
+              vehicle={{
+                id: vehicle.id,
+                type: vehicle.type,
+                make: vehicle.make,
+                model: vehicle.model,
+                year: vehicle.year,
+                grade: vehicle.grade,
+                plateNumber: vehicle.plateNumber,
+                purchaseDate: vehicle.purchaseDate ? vehicle.purchaseDate.toISOString() : null,
+              }}
+            />
           </div>
           <Link
             href={`/vehicles/${vehicle.id}/records/new`}
@@ -68,7 +74,7 @@ export default async function VehicleDetailPage({
 
       <ReminderList statuses={statuses} />
 
-      <div className="border border-neutral-200 dark:border-neutral-800 rounded-lg p-4">
+      <div className="border border-neutral-200 dark:border-neutral-800 rounded-lg p-3">
         <OdometerUpdateForm vehicleId={vehicle.id} currentOdometer={vehicle.currentOdometer} />
       </div>
 
