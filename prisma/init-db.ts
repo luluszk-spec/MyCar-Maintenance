@@ -28,6 +28,7 @@ const ALTER_STATEMENTS = [
   `ALTER TABLE "Vehicle" ADD COLUMN "plateNumber" TEXT`,
   `ALTER TABLE "Vehicle" ADD COLUMN "purchaseDate" DATETIME`,
   `ALTER TABLE "MaintenanceType" ADD COLUMN "vehicleType" TEXT`,
+  `ALTER TABLE "User" ADD COLUMN "isAdmin" BOOLEAN NOT NULL DEFAULT 0`,
 ];
 
 async function main() {

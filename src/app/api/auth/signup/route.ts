@@ -46,6 +46,26 @@ export async function POST(request: Request) {
       })),
     });
 
+    // Admin-authored maintenance types are copied in as regular (editable,
+    // deletable) items for every new signup, on top of the static defaults
+    // above — this is how an admin's additions reach future users.
+    const adminTypes = await tx.maintenanceType.findMany({
+      where: { user: { isAdmin: true }, isCustom: true },
+    });
+    if (adminTypes.length > 0) {
+      await tx.maintenanceType.createMany({
+        data: adminTypes.map((t) => ({
+          userId: created.id,
+          name: t.name,
+          vehicleType: t.vehicleType,
+          defaultIntervalKm: t.defaultIntervalKm,
+          defaultIntervalMonths: t.defaultIntervalMonths,
+          isCheckOnly: t.isCheckOnly,
+          isCustom: true,
+        })),
+      });
+    }
+
     return created;
   }).catch((err) => {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
