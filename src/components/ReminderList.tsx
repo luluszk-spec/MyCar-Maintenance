@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { MaintenanceStatus } from "@/lib/maintenance";
 import { isUrgent } from "@/lib/maintenance";
 import { ReminderBadge } from "@/components/ReminderBadge";
+import { CheckReminderButton } from "@/components/CheckReminderButton";
 
 export function ReminderList({ statuses }: { statuses: MaintenanceStatus[] }) {
   const [expanded, setExpanded] = useState(false);
@@ -15,9 +16,13 @@ export function ReminderList({ statuses }: { statuses: MaintenanceStatus[] }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {urgent.map((status) => (
-        <ReminderBadge key={status.maintenanceTypeId} status={status} />
-      ))}
+      {urgent.map((status) =>
+        status.isCheckOnly ? (
+          <CheckReminderButton key={status.maintenanceTypeId} status={status} />
+        ) : (
+          <ReminderBadge key={status.maintenanceTypeId} status={status} />
+        )
+      )}
       {other.length > 0 && (
         <>
           <button

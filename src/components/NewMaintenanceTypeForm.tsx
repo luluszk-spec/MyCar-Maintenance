@@ -10,6 +10,7 @@ const labelClass = "text-sm font-medium";
 export function NewMaintenanceTypeForm() {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [isCheckOnly, setIsCheckOnly] = useState(false);
   const [intervalKm, setIntervalKm] = useState("");
   const [intervalMonths, setIntervalMonths] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -25,7 +26,8 @@ export function NewMaintenanceTypeForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,
-        defaultIntervalKm: intervalKm ? Number(intervalKm) : undefined,
+        isCheckOnly,
+        defaultIntervalKm: !isCheckOnly && intervalKm ? Number(intervalKm) : undefined,
         defaultIntervalMonths: intervalMonths ? Number(intervalMonths) : undefined,
       }),
     });
@@ -37,6 +39,7 @@ export function NewMaintenanceTypeForm() {
     }
 
     setName("");
+    setIsCheckOnly(false);
     setIntervalKm("");
     setIntervalMonths("");
     router.refresh();
@@ -57,23 +60,39 @@ export function NewMaintenanceTypeForm() {
           required
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <label className={labelClass} htmlFor="type-km">
-            距離の目安 (km・任意)
-          </label>
-          <input
-            id="type-km"
-            type="number"
-            min={0}
-            className={inputClass}
-            value={intervalKm}
-            onChange={(e) => setIntervalKm(e.target.value)}
-          />
+
+      <div className="space-y-1.5">
+        <label className={labelClass}>管理方法</label>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setIsCheckOnly(false)}
+            className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium ${
+              !isCheckOnly
+                ? "border-neutral-900 dark:border-white bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+                : "border-neutral-300 dark:border-neutral-700"
+            }`}
+          >
+            距離・期間で管理
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsCheckOnly(true)}
+            className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium ${
+              isCheckOnly
+                ? "border-neutral-900 dark:border-white bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+                : "border-neutral-300 dark:border-neutral-700"
+            }`}
+          >
+            都度確認
+          </button>
         </div>
+      </div>
+
+      {isCheckOnly ? (
         <div className="space-y-1.5">
           <label className={labelClass} htmlFor="type-months">
-            期間の目安 (ヶ月・任意)
+            確認間隔 (ヶ月)
           </label>
           <input
             id="type-months"
@@ -82,9 +101,40 @@ export function NewMaintenanceTypeForm() {
             className={inputClass}
             value={intervalMonths}
             onChange={(e) => setIntervalMonths(e.target.value)}
+            required
           />
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className={labelClass} htmlFor="type-km">
+              距離の目安 (km・任意)
+            </label>
+            <input
+              id="type-km"
+              type="number"
+              min={0}
+              className={inputClass}
+              value={intervalKm}
+              onChange={(e) => setIntervalKm(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className={labelClass} htmlFor="type-months">
+              期間の目安 (ヶ月・任意)
+            </label>
+            <input
+              id="type-months"
+              type="number"
+              min={0}
+              className={inputClass}
+              value={intervalMonths}
+              onChange={(e) => setIntervalMonths(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
+
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
       <button
         type="submit"

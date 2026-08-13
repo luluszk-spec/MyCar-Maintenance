@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS "MaintenanceType" (
   "defaultIntervalKm" INTEGER,
   "defaultIntervalMonths" INTEGER,
   "isCustom" BOOLEAN NOT NULL DEFAULT 0,
+  "isCheckOnly" BOOLEAN NOT NULL DEFAULT 0,
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

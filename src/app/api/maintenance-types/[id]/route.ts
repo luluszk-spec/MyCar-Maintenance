@@ -16,7 +16,13 @@ export async function PATCH(request: Request, { params }: Params) {
   if (typeof body.name === "string" && body.name.trim()) {
     data.name = body.name.trim();
   }
-  if (body.defaultIntervalKm === null || Number.isFinite(body.defaultIntervalKm)) {
+  if (typeof body.isCheckOnly === "boolean") {
+    data.isCheckOnly = body.isCheckOnly;
+  }
+  const isCheckOnly = body.isCheckOnly === true;
+  if (isCheckOnly) {
+    data.defaultIntervalKm = null;
+  } else if (body.defaultIntervalKm === null || Number.isFinite(body.defaultIntervalKm)) {
     data.defaultIntervalKm =
       body.defaultIntervalKm == null ? null : Math.trunc(body.defaultIntervalKm);
   }

@@ -23,17 +23,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "name is required" }, { status: 400 });
   }
 
+  const isCheckOnly = body.isCheckOnly === true;
+
   const type = await prisma.maintenanceType.create({
     data: {
       userId,
       name,
-      defaultIntervalKm: Number.isFinite(body.defaultIntervalKm)
-        ? Math.trunc(body.defaultIntervalKm)
-        : null,
+      defaultIntervalKm:
+        !isCheckOnly && Number.isFinite(body.defaultIntervalKm)
+          ? Math.trunc(body.defaultIntervalKm)
+          : null,
       defaultIntervalMonths: Number.isFinite(body.defaultIntervalMonths)
         ? Math.trunc(body.defaultIntervalMonths)
         : null,
       isCustom: true,
+      isCheckOnly,
     },
   });
 

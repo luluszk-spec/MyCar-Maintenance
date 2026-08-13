@@ -43,6 +43,7 @@ model MaintenanceType {
   defaultIntervalKm     Int?
   defaultIntervalMonths Int?
   isCustom              Boolean             @default(false)
+  isCheckOnly           Boolean             @default(false)
   createdAt             DateTime            @default(now())
   records               MaintenanceRecord[]
 

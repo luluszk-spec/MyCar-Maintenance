@@ -6,6 +6,7 @@ import { ReminderList } from "@/components/ReminderList";
 import { OdometerUpdateForm } from "@/components/OdometerUpdateForm";
 import { DeleteButton } from "@/components/DeleteButton";
 import { VehiclePhotoUpload } from "@/components/VehiclePhotoUpload";
+import { MaintenanceHistoryList } from "@/components/MaintenanceHistoryList";
 import { getCurrentUserId } from "@/lib/session";
 
 const TYPE_EMOJI: Record<string, string> = { CAR: "🚗", MOTORCYCLE: "🏍️" };
@@ -73,33 +74,7 @@ export default async function VehicleDetailPage({
 
       <div className="space-y-3">
         <h2 className="font-medium">整備履歴</h2>
-        {records.length === 0 ? (
-          <p className="text-sm text-neutral-400">まだ記録がありません</p>
-        ) : (
-          <ul className="divide-y divide-neutral-200 dark:divide-neutral-800 border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
-            {records.map((record) => (
-              <li key={record.id} className="px-4 py-3 space-y-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-medium">
-                    {record.maintenanceType?.name ?? record.customTitle}
-                  </p>
-                  <DeleteButton
-                    url={`/api/maintenance-records/${record.id}`}
-                    confirmMessage="この整備記録を削除しますか？"
-                  />
-                </div>
-                <p className="text-sm text-neutral-500">
-                  {record.date.toLocaleDateString("ja-JP")} ・{" "}
-                  {record.odometer.toLocaleString()} km
-                  {record.cost != null ? ` ・ ¥${record.cost.toLocaleString()}` : ""}
-                </p>
-                {record.memo && (
-                  <p className="text-sm text-neutral-500">{record.memo}</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        <MaintenanceHistoryList records={records} />
       </div>
 
       <div className="pt-6 border-t border-neutral-200 dark:border-neutral-800">
