@@ -46,6 +46,7 @@ export function computeMaintenanceStatuses(
   const statuses: MaintenanceStatus[] = [];
 
   for (const type of maintenanceTypes) {
+    if (type.vehicleType != null && type.vehicleType !== vehicle.type) continue;
     if (type.defaultIntervalKm == null && type.defaultIntervalMonths == null) {
       continue;
     }

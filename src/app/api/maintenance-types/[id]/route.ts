@@ -19,6 +19,9 @@ export async function PATCH(request: Request, { params }: Params) {
   if (typeof body.isCheckOnly === "boolean") {
     data.isCheckOnly = body.isCheckOnly;
   }
+  if (body.vehicleType === "CAR" || body.vehicleType === "MOTORCYCLE") {
+    data.vehicleType = body.vehicleType;
+  }
   const isCheckOnly = body.isCheckOnly === true;
   if (isCheckOnly) {
     data.defaultIntervalKm = null;

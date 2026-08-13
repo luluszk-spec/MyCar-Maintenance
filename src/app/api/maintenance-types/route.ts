@@ -24,11 +24,14 @@ export async function POST(request: Request) {
   }
 
   const isCheckOnly = body.isCheckOnly === true;
+  const vehicleType =
+    body.vehicleType === "CAR" || body.vehicleType === "MOTORCYCLE" ? body.vehicleType : null;
 
   const type = await prisma.maintenanceType.create({
     data: {
       userId,
       name,
+      vehicleType,
       defaultIntervalKm:
         !isCheckOnly && Number.isFinite(body.defaultIntervalKm)
           ? Math.trunc(body.defaultIntervalKm)

@@ -22,6 +22,9 @@ export function MaintenanceTypeRow({ type }: { type: MaintenanceType }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(type.name);
+  const [vehicleType, setVehicleType] = useState<"CAR" | "MOTORCYCLE">(
+    type.vehicleType === "MOTORCYCLE" ? "MOTORCYCLE" : "CAR"
+  );
   const [isCheckOnly, setIsCheckOnly] = useState(type.isCheckOnly);
   const [km, setKm] = useState(type.defaultIntervalKm?.toString() ?? "");
   const [months, setMonths] = useState(type.defaultIntervalMonths?.toString() ?? "");
@@ -30,6 +33,7 @@ export function MaintenanceTypeRow({ type }: { type: MaintenanceType }) {
 
   function cancel() {
     setName(type.name);
+    setVehicleType(type.vehicleType === "MOTORCYCLE" ? "MOTORCYCLE" : "CAR");
     setIsCheckOnly(type.isCheckOnly);
     setKm(type.defaultIntervalKm?.toString() ?? "");
     setMonths(type.defaultIntervalMonths?.toString() ?? "");
@@ -46,6 +50,7 @@ export function MaintenanceTypeRow({ type }: { type: MaintenanceType }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,
+        vehicleType,
         isCheckOnly,
         defaultIntervalKm: !isCheckOnly && km ? Number(km) : null,
         defaultIntervalMonths: months ? Number(months) : null,
@@ -69,6 +74,34 @@ export function MaintenanceTypeRow({ type }: { type: MaintenanceType }) {
         <div className="space-y-1.5">
           <label className="text-sm font-medium">項目名</label>
           <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">対象</label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setVehicleType("CAR")}
+              className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium ${
+                vehicleType === "CAR"
+                  ? "border-neutral-900 dark:border-white bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+                  : "border-neutral-300 dark:border-neutral-700"
+              }`}
+            >
+              🚗 車
+            </button>
+            <button
+              type="button"
+              onClick={() => setVehicleType("MOTORCYCLE")}
+              className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium ${
+                vehicleType === "MOTORCYCLE"
+                  ? "border-neutral-900 dark:border-white bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+                  : "border-neutral-300 dark:border-neutral-700"
+              }`}
+            >
+              🏍️ バイク
+            </button>
+          </div>
         </div>
 
         <div className="space-y-1.5">
@@ -161,7 +194,14 @@ export function MaintenanceTypeRow({ type }: { type: MaintenanceType }) {
   return (
     <li className="px-4 py-3 flex items-center justify-between gap-2">
       <div>
-        <p>{type.name}</p>
+        <p>
+          {type.name}
+          {type.vehicleType == null && (
+            <span className="ml-2 text-xs text-neutral-400 border border-neutral-300 dark:border-neutral-700 rounded px-1.5 py-0.5">
+              共通
+            </span>
+          )}
+        </p>
         <p className="text-sm text-neutral-500">
           {intervalLabel(type.defaultIntervalKm, type.defaultIntervalMonths, type.isCheckOnly)}
         </p>

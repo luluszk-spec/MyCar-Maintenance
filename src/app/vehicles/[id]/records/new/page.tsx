@@ -24,6 +24,10 @@ export default async function NewMaintenanceRecordPage({
 
   if (!vehicle) notFound();
 
+  const relevantTypes = maintenanceTypes.filter(
+    (t) => t.vehicleType == null || t.vehicleType === vehicle.type
+  );
+
   return (
     <div className="max-w-md space-y-6">
       <div>
@@ -36,7 +40,7 @@ export default async function NewMaintenanceRecordPage({
       <MaintenanceRecordForm
         vehicleId={vehicle.id}
         currentOdometer={vehicle.currentOdometer}
-        maintenanceTypes={maintenanceTypes}
+        maintenanceTypes={relevantTypes}
       />
     </div>
   );
