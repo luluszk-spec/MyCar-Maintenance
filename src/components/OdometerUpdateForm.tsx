@@ -52,7 +52,7 @@ export function OdometerUpdateForm({
           inputMode="numeric"
           value={displayValue}
           onChange={handleChange}
-          className="w-[9ch] rounded-md border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-neutral-400"
+          className="w-[calc(9ch+1.75rem)] rounded-md border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-neutral-400"
         />
       </div>
       <button

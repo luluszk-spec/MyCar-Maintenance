@@ -7,7 +7,11 @@ const inputClass =
   "w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-neutral-400";
 const labelClass = "text-sm font-medium";
 
-export function NewMaintenanceTypeForm() {
+export function NewMaintenanceTypeForm({
+  vehicleType,
+}: {
+  vehicleType: "CAR" | "MOTORCYCLE";
+}) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [isCheckOnly, setIsCheckOnly] = useState(false);
@@ -26,6 +30,7 @@ export function NewMaintenanceTypeForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,
+        vehicleType,
         isCheckOnly,
         defaultIntervalKm: !isCheckOnly && intervalKm ? Number(intervalKm) : undefined,
         defaultIntervalMonths: intervalMonths ? Number(intervalMonths) : undefined,

@@ -38,11 +38,13 @@ model Vehicle {
   @@index([userId])
 }
 
+// vehicleType: null (applies to every vehicle type) | "CAR" | "MOTORCYCLE"
 model MaintenanceType {
   id                    String              @id @default(cuid())
   userId                String
   user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   name                  String
+  vehicleType           String?
   defaultIntervalKm     Int?
   defaultIntervalMonths Int?
   isCustom              Boolean             @default(false)

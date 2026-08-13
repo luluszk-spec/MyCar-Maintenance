@@ -39,6 +39,7 @@ export async function POST(request: Request) {
       data: DEFAULT_MAINTENANCE_TYPES.map((t) => ({
         userId: created.id,
         name: t.name,
+        vehicleType: t.vehicleType,
         defaultIntervalKm: t.defaultIntervalKm,
         defaultIntervalMonths: t.defaultIntervalMonths,
         isCustom: false,

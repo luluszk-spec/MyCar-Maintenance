@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS "MaintenanceType" (
   "id" TEXT PRIMARY KEY,
   "userId" TEXT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
   "name" TEXT NOT NULL,
+  "vehicleType" TEXT,
   "defaultIntervalKm" INTEGER,
   "defaultIntervalMonths" INTEGER,
   "isCustom" BOOLEAN NOT NULL DEFAULT 0,
