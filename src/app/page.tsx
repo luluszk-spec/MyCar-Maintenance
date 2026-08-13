@@ -48,35 +48,47 @@ export default async function DashboardPage() {
         {vehiclesWithStatus.map(({ vehicle, statuses }) => (
           <div
             key={vehicle.id}
-            className="border border-neutral-200 dark:border-neutral-800 rounded-lg p-4 space-y-3"
+            className="border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden"
           >
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <Link
-                  href={`/vehicles/${vehicle.id}`}
-                  className="font-medium hover:underline"
-                >
-                  {TYPE_EMOJI[vehicle.type] ?? ""} {vehicle.name}
-                </Link>
-                <p className="text-sm text-neutral-500">
-                  走行距離 {vehicle.currentOdometer.toLocaleString()} km
-                </p>
-              </div>
-              <Link
-                href={`/vehicles/${vehicle.id}/records/new`}
-                className="shrink-0 text-sm rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-900"
-              >
-                記録を追加
+            {vehicle.photoUrl && (
+              <Link href={`/vehicles/${vehicle.id}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- user-uploaded data URL, not a static asset */}
+                <img
+                  src={vehicle.photoUrl}
+                  alt={vehicle.name}
+                  className="w-full aspect-[16/9] object-cover"
+                />
               </Link>
-            </div>
-
-            {statuses.length > 0 ? (
-              <ReminderList statuses={statuses} />
-            ) : (
-              <p className="text-sm text-neutral-400">
-                整備記録を追加すると、次回の目安がここに表示されます
-              </p>
             )}
+            <div className="p-4 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <Link
+                    href={`/vehicles/${vehicle.id}`}
+                    className="font-medium hover:underline"
+                  >
+                    {TYPE_EMOJI[vehicle.type] ?? ""} {vehicle.name}
+                  </Link>
+                  <p className="text-sm text-neutral-500">
+                    走行距離 {vehicle.currentOdometer.toLocaleString()} km
+                  </p>
+                </div>
+                <Link
+                  href={`/vehicles/${vehicle.id}/records/new`}
+                  className="shrink-0 text-sm rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-900"
+                >
+                  記録を追加
+                </Link>
+              </div>
+
+              {statuses.length > 0 ? (
+                <ReminderList statuses={statuses} />
+              ) : (
+                <p className="text-sm text-neutral-400">
+                  整備記録を追加すると、次回の目安がここに表示されます
+                </p>
+              )}
+            </div>
           </div>
         ))}
       </div>

@@ -16,6 +16,7 @@ model Vehicle {
   model           String?
   year            Int?
   currentOdometer Int                 @default(0)
+  photoUrl        String?
   createdAt       DateTime            @default(now())
   records         MaintenanceRecord[]
 }

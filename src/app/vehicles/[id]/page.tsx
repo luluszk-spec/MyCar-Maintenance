@@ -5,6 +5,7 @@ import { computeMaintenanceStatuses } from "@/lib/maintenance";
 import { ReminderList } from "@/components/ReminderList";
 import { OdometerUpdateForm } from "@/components/OdometerUpdateForm";
 import { DeleteButton } from "@/components/DeleteButton";
+import { VehiclePhotoUpload } from "@/components/VehiclePhotoUpload";
 
 const TYPE_EMOJI: Record<string, string> = { CAR: "🚗", MOTORCYCLE: "🏍️" };
 const TYPE_LABEL: Record<string, string> = { CAR: "車", MOTORCYCLE: "バイク" };
@@ -36,6 +37,9 @@ export default async function VehicleDetailPage({
         <Link href="/vehicles" className="text-sm text-neutral-500 hover:underline">
           ← 車両一覧
         </Link>
+        <div className="mt-2 mb-3">
+          <VehiclePhotoUpload vehicleId={vehicle.id} photoUrl={vehicle.photoUrl} />
+        </div>
         <div className="flex items-start justify-between gap-2 mt-1">
           <div>
             <h1 className="text-xl font-semibold">

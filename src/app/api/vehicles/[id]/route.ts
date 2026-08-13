@@ -25,6 +25,14 @@ export async function PATCH(request: Request, { params }: Params) {
   if (Number.isFinite(body.currentOdometer)) {
     data.currentOdometer = Math.max(0, Math.trunc(body.currentOdometer));
   }
+  if (body.photoUrl === null) {
+    data.photoUrl = null;
+  } else if (typeof body.photoUrl === "string" && body.photoUrl.startsWith("data:image/")) {
+    if (body.photoUrl.length > 3_000_000) {
+      return NextResponse.json({ error: "画像サイズが大きすぎます" }, { status: 400 });
+    }
+    data.photoUrl = body.photoUrl;
+  }
 
   try {
     const vehicle = await prisma.vehicle.update({ where: { id }, data });

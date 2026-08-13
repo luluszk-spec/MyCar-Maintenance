@@ -22,13 +22,22 @@ export default async function VehiclesPage() {
       {vehicles.length === 0 ? (
         <p className="text-neutral-500 text-sm">まだ車両が登録されていません</p>
       ) : (
-        <ul className="divide-y divide-neutral-200 dark:divide-neutral-800 border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
+        <div className="space-y-4">
           {vehicles.map((vehicle) => (
-            <li key={vehicle.id}>
-              <Link
-                href={`/vehicles/${vehicle.id}`}
-                className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-900"
-              >
+            <Link
+              key={vehicle.id}
+              href={`/vehicles/${vehicle.id}`}
+              className="block border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden hover:bg-neutral-50 dark:hover:bg-neutral-900"
+            >
+              {vehicle.photoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element -- user-uploaded data URL, not a static asset
+                <img
+                  src={vehicle.photoUrl}
+                  alt={vehicle.name}
+                  className="w-full aspect-[16/9] object-cover"
+                />
+              )}
+              <div className="flex items-center justify-between gap-3 px-4 py-3">
                 <div>
                   <p className="font-medium">
                     {TYPE_EMOJI[vehicle.type] ?? ""} {vehicle.name}
@@ -43,10 +52,10 @@ export default async function VehiclesPage() {
                 <p className="text-sm text-neutral-500 shrink-0">
                   {vehicle.currentOdometer.toLocaleString()} km
                 </p>
-              </Link>
-            </li>
+              </div>
+            </Link>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

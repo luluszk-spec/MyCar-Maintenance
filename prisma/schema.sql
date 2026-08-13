@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS "Vehicle" (
   "model" TEXT,
   "year" INTEGER,
   "currentOdometer" INTEGER NOT NULL DEFAULT 0,
+  "photoUrl" TEXT,
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
