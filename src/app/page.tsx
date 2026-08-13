@@ -1,15 +1,20 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { computeMaintenanceStatuses } from "@/lib/maintenance";
 import { ReminderList } from "@/components/ReminderList";
+import { getCurrentUserId } from "@/lib/session";
 
 const TYPE_EMOJI: Record<string, string> = { CAR: "🚗", MOTORCYCLE: "🏍️" };
 
 export default async function DashboardPage() {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+
   const [vehicles, maintenanceTypes, records] = await Promise.all([
-    prisma.vehicle.findMany({ orderBy: { createdAt: "asc" } }),
-    prisma.maintenanceType.findMany(),
-    prisma.maintenanceRecord.findMany(),
+    prisma.vehicle.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
+    prisma.maintenanceType.findMany({ where: { userId } }),
+    prisma.maintenanceRecord.findMany({ where: { vehicle: { userId } } }),
   ]);
 
   if (vehicles.length === 0) {

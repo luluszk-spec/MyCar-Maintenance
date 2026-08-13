@@ -1,11 +1,18 @@
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUserId } from "@/lib/session";
 
 const TYPE_EMOJI: Record<string, string> = { CAR: "🚗", MOTORCYCLE: "🏍️" };
 
 export default async function CostsPage() {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+
   const [vehicles, records] = await Promise.all([
-    prisma.vehicle.findMany({ orderBy: { createdAt: "asc" } }),
-    prisma.maintenanceRecord.findMany({ where: { cost: { not: null } } }),
+    prisma.vehicle.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
+    prisma.maintenanceRecord.findMany({
+      where: { cost: { not: null }, vehicle: { userId } },
+    }),
   ]);
 
   const vehicleById = new Map(vehicles.map((v) => [v.id, v]));

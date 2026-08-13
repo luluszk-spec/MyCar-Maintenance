@@ -1,9 +1,15 @@
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { NewMaintenanceTypeForm } from "@/components/NewMaintenanceTypeForm";
 import { MaintenanceTypeRow } from "@/components/MaintenanceTypeRow";
+import { getCurrentUserId } from "@/lib/session";
 
 export default async function MaintenanceTypesPage() {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+
   const types = await prisma.maintenanceType.findMany({
+    where: { userId },
     orderBy: [{ isCustom: "asc" }, { createdAt: "asc" }],
   });
   const defaults = types.filter((t) => !t.isCustom);

@@ -15,7 +15,7 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function NavLinks() {
+export function NavLinks({ userLabel }: { userLabel?: string | null }) {
   const pathname = usePathname();
 
   return (
@@ -33,6 +33,11 @@ export function NavLinks() {
           {item.label}
         </Link>
       ))}
+      {userLabel && (
+        <span className="px-2 text-neutral-500 whitespace-nowrap max-w-[10rem] truncate">
+          {userLabel}
+        </span>
+      )}
       <form action="/api/auth/logout" method="POST">
         <button
           type="submit"

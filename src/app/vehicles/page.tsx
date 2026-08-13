@@ -1,11 +1,19 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUserId } from "@/lib/session";
 
 const TYPE_EMOJI: Record<string, string> = { CAR: "🚗", MOTORCYCLE: "🏍️" };
 const TYPE_LABEL: Record<string, string> = { CAR: "車", MOTORCYCLE: "バイク" };
 
 export default async function VehiclesPage() {
-  const vehicles = await prisma.vehicle.findMany({ orderBy: { createdAt: "asc" } });
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+
+  const vehicles = await prisma.vehicle.findMany({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+  });
 
   return (
     <div className="space-y-6">

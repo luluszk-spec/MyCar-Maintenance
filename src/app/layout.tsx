@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import { cookies } from "next/headers";
 import "./globals.css";
-import { SESSION_COOKIE, verifySessionValue } from "@/lib/auth";
+import { getCurrentUserId } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import { NavLinks } from "@/components/NavLinks";
 import { BottomNav } from "@/components/BottomNav";
 
@@ -43,10 +43,15 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const authenticated = verifySessionValue(
-    cookieStore.get(SESSION_COOKIE)?.value
-  );
+  const userId = await getCurrentUserId();
+  const user = userId
+    ? await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true },
+      })
+    : null;
+  const authenticated = !!user;
+  const userLabel = user ? user.name || user.email : null;
 
   return (
     <html
@@ -60,15 +65,20 @@ export default async function RootLayout({
               <Link href="/" className="font-semibold text-lg shrink-0">
                 🚗 MyCar
               </Link>
-              <NavLinks />
-              <form action="/api/auth/logout" method="POST" className="md:hidden">
-                <button
-                  type="submit"
-                  className="px-3 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                >
-                  ログアウト
-                </button>
-              </form>
+              <NavLinks userLabel={userLabel} />
+              <div className="md:hidden flex items-center gap-2 min-w-0">
+                <span className="text-sm text-neutral-500 truncate max-w-[8rem]">
+                  {userLabel}
+                </span>
+                <form action="/api/auth/logout" method="POST">
+                  <button
+                    type="submit"
+                    className="px-2 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 shrink-0"
+                  >
+                    ログアウト
+                  </button>
+                </form>
+              </div>
             </div>
           </header>
         )}

@@ -7,9 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id               String            @id @default(cuid())
+  email            String            @unique
+  passwordHash     String
+  name             String?
+  createdAt        DateTime          @default(now())
+  vehicles         Vehicle[]
+  maintenanceTypes MaintenanceType[]
+}
+
 // type: "CAR" | "MOTORCYCLE"
 model Vehicle {
   id              String              @id @default(cuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   name            String
   type            String
   make            String?
@@ -19,16 +31,22 @@ model Vehicle {
   photoUrl        String?
   createdAt       DateTime            @default(now())
   records         MaintenanceRecord[]
+
+  @@index([userId])
 }
 
 model MaintenanceType {
   id                    String              @id @default(cuid())
+  userId                String
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   name                  String
   defaultIntervalKm     Int?
   defaultIntervalMonths Int?
   isCustom              Boolean             @default(false)
   createdAt             DateTime            @default(now())
   records               MaintenanceRecord[]
+
+  @@index([userId])
 }
 
 model MaintenanceRecord {

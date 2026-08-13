@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { computeMaintenanceStatuses } from "@/lib/maintenance";
 import { ReminderList } from "@/components/ReminderList";
 import { OdometerUpdateForm } from "@/components/OdometerUpdateForm";
 import { DeleteButton } from "@/components/DeleteButton";
 import { VehiclePhotoUpload } from "@/components/VehiclePhotoUpload";
+import { getCurrentUserId } from "@/lib/session";
 
 const TYPE_EMOJI: Record<string, string> = { CAR: "🚗", MOTORCYCLE: "🏍️" };
 const TYPE_LABEL: Record<string, string> = { CAR: "車", MOTORCYCLE: "バイク" };
@@ -15,13 +16,16 @@ export default async function VehicleDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+
   const { id } = await params;
 
-  const vehicle = await prisma.vehicle.findUnique({ where: { id } });
+  const vehicle = await prisma.vehicle.findFirst({ where: { id, userId } });
   if (!vehicle) notFound();
 
   const [maintenanceTypes, records] = await Promise.all([
-    prisma.maintenanceType.findMany(),
+    prisma.maintenanceType.findMany({ where: { userId } }),
     prisma.maintenanceRecord.findMany({
       where: { vehicleId: id },
       include: { maintenanceType: true },

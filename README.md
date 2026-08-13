@@ -4,7 +4,7 @@
 
 - Next.js (App Router) + TypeScript + Tailwind CSS
 - Prisma ORM + `@libsql/client`（SQLite / Turso 互換のlibSQLドライバ）
-- 認証は簡易パスワードゲートのみ（自分専用アプリ想定）
+- 認証はメールアドレス + パスワードのマルチユーザー対応（URLを知っていれば誰でも新規登録可能。各ユーザーのデータは完全に分離される）
 
 ## ローカルで動かす
 
@@ -15,11 +15,10 @@ cp .env.example .env.local
 
 `.env.local` を編集:
 
-- `APP_PASSWORD` — アプリにアクセスするためのパスワード
 - `SESSION_SECRET` — ログインセッションの署名用ランダム文字列（`openssl rand -hex 32` で生成）
 - `DATABASE_URL` はローカルではそのまま `file:./local.db` でOK（Tursoアカウント不要）
 
-DBの初期化（テーブル作成 + 既定の整備項目の投入）:
+DBの初期化（テーブル作成のみ。整備項目のデフォルトはユーザーごとにサインアップ時に作られる）:
 
 ```bash
 npm run db:init
@@ -31,7 +30,7 @@ npm run db:init
 npm run dev
 ```
 
-http://localhost:3000 を開き、`APP_PASSWORD` でログイン。
+http://localhost:3000 を開き、`/signup` から新規登録。
 
 ## 本番デプロイ（Vercel + Turso）
 
@@ -54,7 +53,7 @@ turso db tokens create mycar-maintenance
 ### 2. リモートDBにスキーマを適用
 
 このリポジトリの `npm run db:init` はローカルファイルにもTursoにも同じスクリプトで使える
-（`prisma/init-db.ts` が `DATABASE_URL` を見てテーブル作成 + 既定項目の投入を行う）。
+（`prisma/init-db.ts` が `DATABASE_URL` を見てテーブルを作成する）。
 
 ```bash
 DATABASE_URL="libsql://<your-db>.turso.io" \
@@ -68,29 +67,27 @@ npm run db:init
 2. Environment Variablesに以下を設定
    - `DATABASE_URL` = Tursoの `libsql://...` URL
    - `DATABASE_AUTH_TOKEN` = Tursoのトークン
-   - `APP_PASSWORD` = アプリのパスワード（本番用に変更推奨）
    - `SESSION_SECRET` = ランダムな文字列（`openssl rand -hex 32`）
 3. Deploy
 
 デプロイ後のURLをiPhoneのSafariで開き、「ホーム画面に追加」するとアプリのように使えます。
 
-> Public リポジトリ・Public URLになるため、`APP_PASSWORD` は必ずデフォルトから変更してください。
-
 ## 主な機能
 
-- 車両（車・バイク、複数台）の登録・走行距離管理
+- メールアドレス + パスワードでのユーザー登録・ログイン（データはユーザーごとに完全分離）
+- 車両（車・バイク、複数台）の登録・走行距離管理・写真登録
 - 整備記録の記録（既定項目 + 自由入力、費用・メモ）
 - 走行距離ベース／日付ベースのリマインダー（ダッシュボードに「あと◯km / ◯日」表示）
-- 整備項目マスタのカスタマイズ
+- 整備項目マスタのカスタマイズ（サインアップ時に既定項目がユーザー専用にコピーされ、以後自由に編集・追加・削除できる）
 - 年別・車両別のコスト集計
 
 ## API
 
 `src/app/api/` 配下にREST風のJSON APIがあり、画面はこれを経由してデータを更新します
-（将来ネイティブアプリを作る場合も同じAPIを再利用できる想定）。
+（将来ネイティブアプリを作る場合も同じAPIを再利用できる想定）。すべてログイン中のユーザーのデータのみを対象とし、他ユーザーのリソースへのアクセスは404になります。
 
 - `GET/POST /api/vehicles`, `GET/PATCH/DELETE /api/vehicles/:id`
-- `GET/POST /api/maintenance-types`, `DELETE /api/maintenance-types/:id`
+- `GET/POST /api/maintenance-types`, `PATCH/DELETE /api/maintenance-types/:id`
 - `GET/POST /api/maintenance-records`, `DELETE /api/maintenance-records/:id`
 
-すべて `proxy.ts`（Next.js 16のミドルウェア）でログインセッションのCookieをチェックしています。
+`proxy.ts`（Next.js 16のミドルウェア）でログインセッションのCookieをチェックし、各ページ・APIは`src/lib/session.ts`の`getCurrentUserId()`でリクエスト元のユーザーを特定してデータを絞り込んでいます。

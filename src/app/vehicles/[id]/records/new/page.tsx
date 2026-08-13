@@ -1,18 +1,25 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { MaintenanceRecordForm } from "@/components/MaintenanceRecordForm";
+import { getCurrentUserId } from "@/lib/session";
 
 export default async function NewMaintenanceRecordPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+
   const { id } = await params;
 
   const [vehicle, maintenanceTypes] = await Promise.all([
-    prisma.vehicle.findUnique({ where: { id } }),
-    prisma.maintenanceType.findMany({ orderBy: [{ isCustom: "asc" }, { createdAt: "asc" }] }),
+    prisma.vehicle.findFirst({ where: { id, userId } }),
+    prisma.maintenanceType.findMany({
+      where: { userId },
+      orderBy: [{ isCustom: "asc" }, { createdAt: "asc" }],
+    }),
   ]);
 
   if (!vehicle) notFound();

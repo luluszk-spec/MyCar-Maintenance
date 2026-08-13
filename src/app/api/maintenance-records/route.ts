@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUserId } from "@/lib/session";
 
 export async function GET(request: Request) {
+  const userId = await getCurrentUserId();
+  if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
   const { searchParams } = new URL(request.url);
   const vehicleId = searchParams.get("vehicleId");
 
   const records = await prisma.maintenanceRecord.findMany({
-    where: vehicleId ? { vehicleId } : undefined,
+    where: { vehicle: { userId, ...(vehicleId ? { id: vehicleId } : {}) } },
     include: { maintenanceType: true },
     orderBy: { date: "desc" },
   });
@@ -14,6 +18,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const userId = await getCurrentUserId();
+  if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
   const body = await request.json();
 
   const vehicleId = typeof body.vehicleId === "string" ? body.vehicleId : "";
@@ -38,7 +45,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
+  const vehicle = await prisma.vehicle.findFirst({ where: { id: vehicleId, userId } });
   if (!vehicle) return NextResponse.json({ error: "vehicle not found" }, { status: 404 });
 
   const record = await prisma.$transaction(async (tx) => {

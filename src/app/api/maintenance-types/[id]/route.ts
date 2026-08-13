@@ -1,10 +1,14 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUserId } from "@/lib/session";
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, { params }: Params) {
+  const userId = await getCurrentUserId();
+  if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
   const { id } = await params;
   const body = await request.json();
 
@@ -21,17 +25,24 @@ export async function PATCH(request: Request, { params }: Params) {
       body.defaultIntervalMonths == null ? null : Math.trunc(body.defaultIntervalMonths);
   }
 
-  try {
-    const type = await prisma.maintenanceType.update({ where: { id }, data });
-    return NextResponse.json(type);
-  } catch {
+  const { count } = await prisma.maintenanceType.updateMany({
+    where: { id, userId },
+    data,
+  });
+  if (count === 0) {
     return NextResponse.json({ error: "見つかりませんでした" }, { status: 404 });
   }
+
+  const type = await prisma.maintenanceType.findUnique({ where: { id } });
+  return NextResponse.json(type);
 }
 
 export async function DELETE(_request: Request, { params }: Params) {
+  const userId = await getCurrentUserId();
+  if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
   const { id } = await params;
-  const type = await prisma.maintenanceType.findUnique({ where: { id } });
+  const type = await prisma.maintenanceType.findFirst({ where: { id, userId } });
   if (!type) return NextResponse.json({ error: "見つかりませんでした" }, { status: 404 });
   if (!type.isCustom) {
     return NextResponse.json(
