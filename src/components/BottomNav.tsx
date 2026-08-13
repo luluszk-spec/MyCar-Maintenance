@@ -13,7 +13,10 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-950/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
+    <nav
+      className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-950/95 backdrop-blur"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 6px)" }}
+    >
       <div className="flex">
         {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
@@ -21,7 +24,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-h-[60px] text-xs ${
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 pt-2 pb-1 min-h-[49px] text-[11px] active:opacity-60 ${
                 active
                   ? "text-neutral-900 dark:text-white font-medium"
                   : "text-neutral-400 dark:text-neutral-500"
