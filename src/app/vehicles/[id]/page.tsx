@@ -22,10 +22,8 @@ export default async function VehicleDetailPage({
 
   const { id } = await params;
 
-  const vehicle = await prisma.vehicle.findFirst({ where: { id, userId } });
-  if (!vehicle) notFound();
-
-  const [maintenanceTypes, records] = await Promise.all([
+  const [vehicle, maintenanceTypes, records] = await Promise.all([
+    prisma.vehicle.findFirst({ where: { id, userId } }),
     prisma.maintenanceType.findMany({ where: { userId } }),
     prisma.maintenanceRecord.findMany({
       where: { vehicleId: id },
@@ -33,6 +31,7 @@ export default async function VehicleDetailPage({
       orderBy: { date: "desc" },
     }),
   ]);
+  if (!vehicle) notFound();
 
   const statuses = computeMaintenanceStatuses(vehicle, maintenanceTypes, records);
 

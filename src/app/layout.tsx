@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { getCurrentUserId } from "@/lib/session";
-import { prisma } from "@/lib/prisma";
+import { getUserLabel } from "@/lib/userLabel";
 import { NavLinks } from "@/components/NavLinks";
 import { BottomNav } from "@/components/BottomNav";
 
@@ -38,20 +39,19 @@ export const viewport: Viewport = {
   ],
 };
 
+async function UserLabel({ userId, className }: { userId: string; className: string }) {
+  const label = await getUserLabel(userId);
+  if (!label) return null;
+  return <span className={className}>{label}</span>;
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const userId = await getCurrentUserId();
-  const user = userId
-    ? await prisma.user.findUnique({
-        where: { id: userId },
-        select: { name: true, email: true },
-      })
-    : null;
-  const authenticated = !!user;
-  const userLabel = user ? user.name || user.email : null;
+  const authenticated = !!userId;
 
   return (
     <html
@@ -65,11 +65,23 @@ export default async function RootLayout({
               <Link href="/" className="font-semibold text-lg shrink-0">
                 🚗 MyCar
               </Link>
-              <NavLinks userLabel={userLabel} />
+              <NavLinks
+                userLabelSlot={
+                  <Suspense fallback={null}>
+                    <UserLabel
+                      userId={userId}
+                      className="px-2 text-neutral-500 whitespace-nowrap max-w-[10rem] truncate"
+                    />
+                  </Suspense>
+                }
+              />
               <div className="md:hidden flex items-center gap-2 min-w-0">
-                <span className="text-sm text-neutral-500 truncate max-w-[8rem]">
-                  {userLabel}
-                </span>
+                <Suspense fallback={null}>
+                  <UserLabel
+                    userId={userId}
+                    className="text-sm text-neutral-500 truncate max-w-[8rem]"
+                  />
+                </Suspense>
                 <form action="/api/auth/logout" method="POST">
                   <button
                     type="submit"
