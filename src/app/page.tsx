@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { computeMaintenanceStatuses } from "@/lib/maintenance";
-import { ReminderBadge } from "@/components/ReminderBadge";
+import { ReminderList } from "@/components/ReminderList";
 
 const TYPE_EMOJI: Record<string, string> = { CAR: "🚗", MOTORCYCLE: "🏍️" };
 
@@ -71,11 +71,7 @@ export default async function DashboardPage() {
             </div>
 
             {statuses.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {statuses.map((status) => (
-                  <ReminderBadge key={status.maintenanceTypeId} status={status} />
-                ))}
-              </div>
+              <ReminderList statuses={statuses} />
             ) : (
               <p className="text-sm text-neutral-400">
                 整備記録を追加すると、次回の目安がここに表示されます

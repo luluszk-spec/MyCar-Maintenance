@@ -4,6 +4,8 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { SESSION_COOKIE, verifySessionValue } from "@/lib/auth";
+import { NavLinks } from "@/components/NavLinks";
+import { BottomNav } from "@/components/BottomNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,13 +26,6 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
 };
-
-const NAV_LINKS = [
-  { href: "/", label: "ダッシュボード" },
-  { href: "/vehicles", label: "車両" },
-  { href: "/maintenance-types", label: "整備項目" },
-  { href: "/costs", label: "コスト" },
-];
 
 export default async function RootLayout({
   children,
@@ -54,31 +49,22 @@ export default async function RootLayout({
               <Link href="/" className="font-semibold text-lg shrink-0">
                 🚗 MyCar
               </Link>
-              <nav className="flex items-center gap-1 overflow-x-auto text-sm">
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="px-2.5 py-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 whitespace-nowrap"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                <form action="/api/auth/logout" method="POST">
-                  <button
-                    type="submit"
-                    className="px-2.5 py-1.5 rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 whitespace-nowrap"
-                  >
-                    ログアウト
-                  </button>
-                </form>
-              </nav>
+              <NavLinks />
+              <form action="/api/auth/logout" method="POST" className="md:hidden">
+                <button
+                  type="submit"
+                  className="px-3 py-2 rounded-md text-sm text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                >
+                  ログアウト
+                </button>
+              </form>
             </div>
           </header>
         )}
-        <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-6">
+        <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-6 pb-24 md:pb-6">
           {children}
         </main>
+        {authenticated && <BottomNav />}
       </body>
     </html>
   );

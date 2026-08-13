@@ -82,6 +82,13 @@ function addMonths(date: Date, months: number): Date {
   return result;
 }
 
+const URGENT_WITHIN_DAYS = 30;
+
+/** True when overdue, or due within about a month (km-based intervals use the same day-equivalent as urgencyScore). */
+export function isUrgent(status: MaintenanceStatus): boolean {
+  return status.isOverdue || status.urgencyScore <= URGENT_WITHIN_DAYS;
+}
+
 export function formatRemaining(status: MaintenanceStatus): string {
   const parts: string[] = [];
   if (status.remainingKm != null) {

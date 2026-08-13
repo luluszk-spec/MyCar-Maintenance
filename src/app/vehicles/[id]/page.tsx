@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { computeMaintenanceStatuses } from "@/lib/maintenance";
-import { ReminderBadge } from "@/components/ReminderBadge";
+import { ReminderList } from "@/components/ReminderList";
 import { OdometerUpdateForm } from "@/components/OdometerUpdateForm";
 import { DeleteButton } from "@/components/DeleteButton";
 
@@ -57,13 +57,7 @@ export default async function VehicleDetailPage({
         </div>
       </div>
 
-      {statuses.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {statuses.map((status) => (
-            <ReminderBadge key={status.maintenanceTypeId} status={status} />
-          ))}
-        </div>
-      )}
+      <ReminderList statuses={statuses} />
 
       <div className="border border-neutral-200 dark:border-neutral-800 rounded-lg p-4">
         <OdometerUpdateForm vehicleId={vehicle.id} currentOdometer={vehicle.currentOdometer} />
