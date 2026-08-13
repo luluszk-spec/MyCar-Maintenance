@@ -25,7 +25,8 @@ export function DeleteButton({
     const res = await fetch(url, { method: "DELETE" });
     setBusy(false);
     if (!res.ok) {
-      window.alert("削除に失敗しました");
+      const body: { error?: string } | null = await res.json().catch(() => null);
+      window.alert(body?.error ?? "削除に失敗しました");
       return;
     }
     if (redirectTo) {

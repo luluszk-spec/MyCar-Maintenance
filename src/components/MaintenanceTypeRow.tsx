@@ -1,0 +1,137 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import type { MaintenanceType } from "@prisma/client";
+import { DeleteButton } from "@/components/DeleteButton";
+
+const inputClass =
+  "w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-neutral-400";
+
+function intervalLabel(km: number | null, months: number | null) {
+  const parts: string[] = [];
+  if (km != null) parts.push(`${km.toLocaleString()}km`);
+  if (months != null) parts.push(`${months}ヶ月`);
+  return parts.length ? parts.join(" / ") : "目安なし";
+}
+
+export function MaintenanceTypeRow({ type }: { type: MaintenanceType }) {
+  const router = useRouter();
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(type.name);
+  const [km, setKm] = useState(type.defaultIntervalKm?.toString() ?? "");
+  const [months, setMonths] = useState(type.defaultIntervalMonths?.toString() ?? "");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function cancel() {
+    setName(type.name);
+    setKm(type.defaultIntervalKm?.toString() ?? "");
+    setMonths(type.defaultIntervalMonths?.toString() ?? "");
+    setError(null);
+    setEditing(false);
+  }
+
+  async function save() {
+    setSubmitting(true);
+    setError(null);
+
+    const res = await fetch(`/api/maintenance-types/${type.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        defaultIntervalKm: km ? Number(km) : null,
+        defaultIntervalMonths: months ? Number(months) : null,
+      }),
+    });
+
+    setSubmitting(false);
+    if (!res.ok) {
+      const body: { error?: string } | null = await res.json().catch(() => null);
+      setError(body?.error ?? "更新に失敗しました");
+      return;
+    }
+
+    setEditing(false);
+    router.refresh();
+  }
+
+  if (editing) {
+    return (
+      <li className="px-4 py-3 space-y-3">
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">項目名</label>
+          <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">距離の目安 (km・任意)</label>
+            <input
+              type="number"
+              min={0}
+              className={inputClass}
+              value={km}
+              onChange={(e) => setKm(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">期間の目安 (ヶ月・任意)</label>
+            <input
+              type="number"
+              min={0}
+              className={inputClass}
+              value={months}
+              onChange={(e) => setMonths(e.target.value)}
+            />
+          </div>
+        </div>
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={save}
+            disabled={submitting}
+            className="rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-3 py-1.5 text-sm font-medium disabled:opacity-50"
+          >
+            {submitting ? "保存中..." : "保存"}
+          </button>
+          <button
+            type="button"
+            onClick={cancel}
+            disabled={submitting}
+            className="rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-1.5 text-sm"
+          >
+            キャンセル
+          </button>
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <li className="px-4 py-3 flex items-center justify-between gap-2">
+      <div>
+        <p>{type.name}</p>
+        <p className="text-sm text-neutral-500">
+          {intervalLabel(type.defaultIntervalKm, type.defaultIntervalMonths)}
+        </p>
+      </div>
+      <div className="flex items-center gap-3 shrink-0">
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="text-sm text-neutral-500 hover:underline"
+        >
+          編集
+        </button>
+        {type.isCustom && (
+          <DeleteButton
+            url={`/api/maintenance-types/${type.id}`}
+            confirmMessage={`${type.name} を削除しますか？`}
+          />
+        )}
+      </div>
+    </li>
+  );
+}
